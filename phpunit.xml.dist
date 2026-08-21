@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    bootstrap="tests/bootstrap.php"
+    cacheDirectory=".phpunit.cache"
+    colors="true"
+    executionOrder="depends,defects"
+    failOnRisky="true"
+    failOnWarning="true"
+    beStrictAboutOutputDuringTests="true"
+>
+    <testsuites>
+        <testsuite name="Application Test Suite">
+            <directory>tests/TestCase</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </source>
+
+    <coverage>
+        <report>
+            <text outputFile="php://stdout"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="APP_ENV" value="test"/>
+        <env name="DEBUG" value="true"/>
+        <env name="SECURITY_SALT" value="test-salt-change-this"/>
+        <env name="DB_HOST" value="db"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_USERNAME" value="cake"/>
+        <env name="DB_PASSWORD" value="cake"/>
+        <env name="DB_DATABASE" value="cakephp_app"/>
+        <env name="DB_TEST_DATABASE" value="cakephp_test"/>
+    </php>
+</phpunit>

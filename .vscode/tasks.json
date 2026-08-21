@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Cake: serve",
+      "type": "shell",
+      "command": "bin/cake server -H 0.0.0.0 -p 8765",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Cake: migrations migrate",
+      "type": "shell",
+      "command": "bin/cake migrations migrate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cake: migrations migrate test",
+      "type": "shell",
+      "command": "bin/cake migrations migrate --connection test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cake: phpunit",
+      "type": "shell",
+      "command": "vendor/bin/phpunit --colors=always",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cake: phpunit coverage",
+      "type": "shell",
+      "command": "XDEBUG_MODE=coverage vendor/bin/phpunit --colors=always --coverage-text",
+      "problemMatcher": []
+    },
+    {
+      "label": "Cake: composer install",
+      "type": "shell",
+      "command": "composer install",
+      "problemMatcher": []
+    }
+  ]
+}

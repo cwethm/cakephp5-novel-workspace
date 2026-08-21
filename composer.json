@@ -1,0 +1,28 @@
+{
+  "name": "your-vendor/cakephp5-codespaces-quickstart",
+  "description": "Quickstart Codespaces scaffold files for CakePHP 5 apps",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "cakephp/cakephp": "^5.3",
+    "cakephp/migrations": "^4.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5",
+    "cakephp/debug_kit": "^5.0"
+  },
+  "scripts": {
+    "serve": "bin/cake server -H 0.0.0.0 -p 8765",
+    "migrate": "bin/cake migrations migrate",
+    "migrate:test": "bin/cake migrations migrate --connection test",
+    "test": "vendor/bin/phpunit --colors=always",
+    "test:coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --colors=always --coverage-text"
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "cakephp/plugin-installer": true
+    }
+  }
+}
