@@ -7,7 +7,7 @@ use App\Middleware\HostHeaderMiddleware;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
-use Authentication\Identifier\IdentifierInterface;
+use Authentication\Identifier\AbstractIdentifier;
 use Authorization\AuthorizationService;
 use Authorization\AuthorizationServiceInterface;
 use Authorization\AuthorizationServiceProviderInterface;
@@ -75,16 +75,16 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
         $service->loadIdentifier('Authentication.Password', [
             'fields' => [
-                IdentifierInterface::CREDENTIAL_USERNAME => 'email',
-                IdentifierInterface::CREDENTIAL_PASSWORD => 'password',
+                AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
+                AbstractIdentifier::CREDENTIAL_PASSWORD => 'password',
             ],
         ]);
 
         $service->loadAuthenticator('Authentication.Session');
         $service->loadAuthenticator('Authentication.Form', [
             'fields' => [
-                IdentifierInterface::CREDENTIAL_USERNAME => 'email',
-                IdentifierInterface::CREDENTIAL_PASSWORD => 'password',
+                AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
+                AbstractIdentifier::CREDENTIAL_PASSWORD => 'password',
             ],
             'loginUrl' => '/login',
         ]);
