@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\ORM\TableRegistry;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -14,9 +15,8 @@ class NovelsControllerTest extends TestCase
 
     private function loginAsUserA(): void
     {
-        $this->enableCsrfToken();
-        $this->enableSecurityToken();
-        $this->post('/login', ['email' => 'a@example.com', 'password' => 'password123']);
+        $user = TableRegistry::getTableLocator()->get('Users')->get(1);
+        $this->session(['Auth' => $user]);
     }
 
     public function testAuthenticatedUserCanCreateNovel(): void

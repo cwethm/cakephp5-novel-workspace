@@ -21,15 +21,19 @@ class CardService
 
         $cards = FactoryLocator::get('Table')->get('Cards');
         $card->name = $name;
-        $card->slug = $this->slugService->uniqueWithinNovel($name, $currentNovel->id(), function (string $slug, int $novelId) use ($cards, $card): bool {
-            $query = $cards->find()->where([
-                'Cards.novel_id' => $novelId,
-                'Cards.slug' => $slug,
-                'Cards.id !=' => (int)$card->id,
-            ]);
+        $card->slug = $this->slugService->uniqueWithinNovel(
+            $name,
+            $currentNovel->id(),
+            function (string $slug, int $novelId) use ($cards, $card): bool {
+                $query = $cards->find()->where([
+                    'Cards.novel_id' => $novelId,
+                    'Cards.slug' => $slug,
+                    'Cards.id !=' => (int)$card->id,
+                ]);
 
-            return $query->count() > 0;
-        });
+                return $query->count() > 0;
+            },
+        );
 
         return $cards->saveOrFail($card);
     }

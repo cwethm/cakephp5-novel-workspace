@@ -8,6 +8,7 @@ use Cake\ORM\Entity;
 class Tag extends Entity
 {
     protected array $_accessible = [
+        'novel_id' => true,
         'name' => true,
         'slug' => true,
         'created' => true,

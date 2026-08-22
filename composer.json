@@ -58,6 +58,6 @@
         "test": "phpunit --colors=always",
         "migrate": "bin/cake migrations migrate",
         "migrate:test": "bin/cake migrations migrate --connection test",
-        "stan": "phpstan analyse"
+        "stan": "phpstan analyse --memory-limit=512M"
     }
 }

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 class UsersController extends AppController
 {
@@ -14,16 +15,13 @@ class UsersController extends AppController
         $this->Authentication->addUnauthenticatedActions(['login']);
     }
 
-    public function login()
+    public function login(): ?Response
     {
         $this->request->allowMethod(['get', 'post']);
         $result = $this->Authentication->getResult();
 
         if ($result->isValid()) {
-            $redirect = $this->request->getQuery('redirect', [
-                'controller' => 'Novels',
-                'action' => 'index',
-            ]);
+            $redirect = $this->Authentication->getLoginRedirect('/novels');
 
             return $this->redirect($redirect);
         }
@@ -35,7 +33,7 @@ class UsersController extends AppController
         return null;
     }
 
-    public function logout()
+    public function logout(): ?Response
     {
         $result = $this->Authentication->getResult();
         if (!$result->isValid()) {

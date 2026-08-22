@@ -60,36 +60,33 @@ class CardsTable extends Table
         return $rules;
     }
 
-    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options): void
-    {
-        if (isset($data['novel_id'])) {
-            unset($data['novel_id']);
-        }
-    }
-
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
     {
         if ($entity->isDirty('name') || !$entity->slug) {
             $novelId = (int)$entity->get('novel_id');
             if ($novelId > 0) {
                 $slugService = new SlugService();
-                $entity->set('slug', $slugService->uniqueWithinNovel((string)$entity->get('name'), $novelId, function (string $slug, int $novelId) use ($entity): bool {
-                    $query = $this->find()->where([
-                        'Cards.novel_id' => $novelId,
-                        'Cards.slug' => $slug,
-                    ]);
-                    if ($entity->id) {
-                        $query->where(['Cards.id !=' => (int)$entity->id]);
-                    }
+                $entity->set('slug', $slugService->uniqueWithinNovel(
+                    (string)$entity->get('name'),
+                    $novelId,
+                    function (string $slug, int $novelId) use ($entity): bool {
+                        $query = $this->find()->where([
+                            'Cards.novel_id' => $novelId,
+                            'Cards.slug' => $slug,
+                        ]);
+                        if ($entity->id) {
+                            $query->where(['Cards.id !=' => (int)$entity->id]);
+                        }
 
-                    return $query->count() > 0;
-                }));
+                        return $query->count() > 0;
+                    },
+                ));
             }
         }
     }
 
-    public function findForNovel(SelectQuery $query, array $options): SelectQuery
+    public function findForNovel(SelectQuery $query, int $novelId): SelectQuery
     {
-        return $query->where(['Cards.novel_id' => (int)$options['novelId']]);
+        return $query->where(['Cards.novel_id' => $novelId]);
     }
 }
