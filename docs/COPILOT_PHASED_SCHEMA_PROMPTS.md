@@ -11,6 +11,71 @@ The current application migration is the Phase 0/1 authority. The file
 `config/schema/novel_factory_cakephp5_schema.sql` is a future-state reference
 only. It must not be imported into the normal development or test databases.
 
+## Current repository baseline
+
+Re-audit this section against the checked-out branch before every slice. At
+this document revision:
+
+- SG-00's migration-only setup, schema ledger, and phase schema test exist.
+  Treat SG-00 as an audit/correction task, not as permission to recreate files
+  or code that are already present.
+- `docs/STRUCTURAL_DATA_CATALOG.md` does not exist yet. That is the expected
+  SG-01 deliverable, so every SG-20+ slice remains blocked until SG-01 is
+  completed and approved.
+- `tests/bootstrap.php` builds the test schema with
+  `Migrations\TestSuite\Migrator`. `tests/schema.sql` is an unused placeholder;
+  do not populate or load it as a second schema authority.
+- Both `default` and `test` are MySQL datasources configured through
+  `config/app_local.example.php` and environment variables. Do not substitute
+  SQLite or invent another datasource for slice verification.
+- The devcontainer and CI select PHP 8.3. The current lockfile selects PHPUnit
+  13.3.1, which requires PHP 8.4.1. This is a repository-level verification
+  blocker that must be resolved in a separate dependency-maintenance change;
+  do not change PHP, PHPUnit, Composer constraints, or the lockfile inside an
+  SG feature slice merely to make checks run.
+- `CurrentNovel::assertContains()` only handles entities with a direct
+  `novel_id`. Card subtype rows inherit tenancy through `cards.novel_id`; do
+  not add duplicate `novel_id` columns to subtype tables or call
+  `assertContains()` on them without implementing a correctly scoped lookup.
+- `CardTypeRegistry` contains future `table` and `route` metadata for all four
+  card types. Those strings are declarations, not evidence that the
+  corresponding tables, controllers, routes, or templates already exist.
+- "Assets" in SG-61 means the future `assets` and `assets_cards` domain tables.
+  It does not mean CakePHP's static files under `webroot/css`, `webroot/js`,
+  `webroot/img`, or `webroot/font`.
+
+## Reference-only future table inventory
+
+At Phase 0/1, every table below is forbidden. This is the canonical list that
+the phase ledger and phase schema test must carry forward, removing only the
+tables introduced by an approved, completed slice:
+
+- `characters`
+- `character_appearances`
+- `character_personalities`
+- `character_voices`
+- `character_traits`
+- `character_skills`
+- `character_goals`
+- `locations`
+- `items`
+- `organizations`
+- `character_organizations`
+- `relationships`
+- `chapters`
+- `scenes`
+- `characters_scenes`
+- `items_scenes`
+- `organizations_scenes`
+- `story_threads`
+- `scenes_story_threads`
+- `plot_points`
+- `plot_points_story_threads`
+- `characters_plot_points`
+- `notes`
+- `assets`
+- `assets_cards`
+
 ## How to use this pack
 
 1. Start a fresh Copilot coding task for each slice.
@@ -123,28 +188,39 @@ OPERATING RULES
    - CONTRIBUTING.md
    - .github/copilot-instructions.md
    - docs/COPILOT_PHASED_SCHEMA_PROMPTS.md
+   - docs/SCHEMA_PHASES.md
    - the current CakePHP migrations
    - config/schema/novel_factory_cakephp5_schema.sql
+   - composer.json, composer.lock, tests/bootstrap.php, phpunit.xml.dist, and
+     .github/workflows/ci.yml when the slice requires executable checks
    - every model, registry, service, controller, template, and test directly
      related to this slice
    Treat the checked-out repository and this prompt as the only authorities.
    Do not rely on or update agent memory as a substitute for repository
    evidence.
+   Use repository search to confirm that every named file, class, route,
+   datasource, service, or setting actually exists before planning around it.
 
 2. Begin with a short repository-grounded plan containing:
    - the exact slice ID
    - current migration head
+   - for an executable slice, current PHP version and Composer lock platform
+     compatibility in the configured devcontainer or CI environment
    - prerequisite tables and features verified as present
    - exact tables, columns, indexes, foreign keys, structural values, model
-     classes, routes, UI, and tests you intend to change
+     classes, routes, UI, fixtures, and tests you intend to change
    - the complete allowed file list for this task
    - an explicit list of later-phase components that you will not touch
    After presenting the plan, edit only the listed files. If another file
    becomes necessary, stop and explain why before changing it.
+   If the requested result is already present, do not manufacture a diff;
+   report the evidence and any remaining acceptance gap.
 
 3. Stop before editing if:
    - a prerequisite slice is absent
    - the working tree contains unrelated changes
+   - an executable slice is requested and the configured PHP runtime cannot
+     install or execute composer.lock
    - the approved machine keys or catalog values required by this slice are
      undefined or contradictory
    - the requested behavior requires a schema or architectural decision not
@@ -159,14 +235,27 @@ OPERATING RULES
      application code.
    - Never use CREATE TABLE IF NOT EXISTS to hide drift.
    - Never edit an already-merged migration to add this slice.
-   - Add exactly one forward DDL migration for this slice. Add a separate data
-     migration only when approved required system rows exist.
+   - For a schema-changing slice, add exactly one forward DDL migration. Add a
+     separate data migration only when approved required system rows exist.
+   - For SG-00, SG-01, SG-70, and any other explicitly design-only/no-schema
+     slice, add no migration.
 
 5. Keep the slice vertical and complete.
-   - Add only schema consumed by behavior implemented in this slice.
-   - Add the CakePHP entity/table associations, validation, build rules,
-     service behavior, authorization/CurrentNovel scoping, controller action,
-     template surface, and tests required by the slice.
+   - For an implementation slice, add only schema consumed by behavior
+     implemented in that slice.
+   - For an implementation slice, add the CakePHP entity/table associations,
+     validation, build rules, service behavior, authorization/CurrentNovel
+     scoping, controller action, template surface, and tests required by the
+     slice.
+   - In an implementation slice, account for disabled FactoryLocator fallback
+     classes: add explicit Table classes for new tables and explicit entity
+     mass-assignment allowlists.
+   - In an implementation slice, follow the existing authenticated route +
+     `currentNovel()` ownership pattern. Do not assume Authorization policies
+     exist for domain entities, and do not introduce a new authorization
+     architecture unless the slice explicitly requires and approves it.
+   - In a subtype implementation slice, scope subtype entities through their
+     associated Card. Subtype tables do not gain a duplicate `novel_id`.
    - Do not create placeholder tables, classes, routes, templates, services,
      repositories, feature flags, APIs, or TODO scaffolding for later slices.
 
@@ -195,13 +284,26 @@ OPERATING RULES
      that introduces a replacement.
 
 9. Tests and evidence:
-   - Test a clean database migration.
-   - Test upgrading the immediately previous slice database.
-   - Update the phase schema test so this slice's tables are required and all
-     later-slice tables remain forbidden.
-   - Add behavior, validation, ownership, cross-novel rejection, and service
-     tests appropriate to the slice.
-   - Run composer cs-check, composer stan, and composer test.
+   - Before running executable checks, run `php -v` and
+     `composer check-platform-reqs --lock`. If the lockfile is incompatible
+     with the configured runtime, stop and report that prerequisite blocker;
+     do not change dependencies inside the slice.
+   - For schema-changing slices, test a clean migration and an upgrade from the
+     immediately previous slice using CI or a clearly isolated disposable test
+     database. Never empty, drop, or repurpose a developer's application
+     database for acceptance testing.
+   - Respect the existing migration-driven test bootstrap. Do not load
+     `tests/schema.sql`, duplicate the schema in fixtures, or add a second test
+     schema path.
+   - For a schema-changing slice, update the phase schema test so the slice's
+     tables are required and all remaining tables from the reference-only
+     future table inventory remain forbidden. A no-schema gate must not change
+     schema expectations.
+   - For an implementation slice, add behavior, validation, ownership,
+     cross-novel rejection, and service tests appropriate to the slice.
+   - For an implementation slice, run the repository's existing
+     `composer cs-check`, `composer stan`, and `composer test` commands only
+     after platform requirements pass.
    - Do not weaken or delete tests to obtain a pass.
 
 10. Scope control:
@@ -241,18 +343,19 @@ test, and CI setup. Do not add or change domain schema.
 REQUIRED CHANGES
 
 1. In .devcontainer/setup.sh:
-   - retain writable-directory preparation
-   - retain Composer installation
-   - retain MySQL readiness handling
-   - retain test-database creation and grants
-   - run application migrations
-   - run test-connection migrations
-   - remove SCHEMA_FILE
-   - remove import_schema()
-   - remove the characters marker query
-   - remove sed-based SQL rewriting
-   - remove both raw schema imports
+   - verify writable-directory preparation remains
+   - verify Composer installation remains
+   - verify MySQL readiness handling remains
+   - verify test-database creation and grants remain
+   - verify application migrations run
+   - verify test-connection migrations run
+   - remove SCHEMA_FILE if present
+   - remove import_schema() if present
+   - remove any reference-table marker query if present
+   - remove sed-based SQL rewriting if present
+   - remove all raw reference-schema imports if present
    - allow required setup failures to stop the script
+   Do not recreate obsolete import identifiers merely so they can be removed.
 
 2. Do not delete config/schema/novel_factory_cakephp5_schema.sql. Document it
    as a non-executable future-state reference.
@@ -261,16 +364,19 @@ REQUIRED CHANGES
    - current phase: Phase 0/1
    - current migration head
    - required domain tables: users, novels, cards, tags, cards_tags
-   - later tables forbidden at this phase
+   - every table in the reference-only future table inventory forbidden at
+     this phase
    - the rule that each later slice adds a new migration and updates this
      ledger
 
-4. Add one database integration test that:
+4. Add or correct one database integration test that:
    - obtains the test connection schema collection
    - asserts the five Phase 0/1 domain tables exist
-   - asserts later reference tables do not exist
+   - asserts every table in the reference-only future table inventory does not
+     exist
    - tolerates framework-owned migration metadata tables without treating
      them as domain tables
+   - relies on the migration runner already configured in tests/bootstrap.php
 
 5. Update setup documentation only where it currently implies or performs the
    full SQL import.
@@ -288,9 +394,11 @@ ACCEPTANCE
 
 - A clean app database contains only migration-managed Phase 0/1 schema.
 - A clean test database contains only migration-managed Phase 0/1 schema.
-- characters, relationships, chapters, scenes, plot_points, notes, and assets
-  are absent.
+- Every table in the reference-only future table inventory is absent.
 - Re-running setup is idempotent through migration history, not table markers.
+- The existing PHP 8.3/Composer lock platform check passes before PHPUnit is
+  claimed as verification evidence. If it does not pass, SG-00 remains
+  verification-blocked and dependency repair is reported as separate work.
 ```
 
 ## SG-01 — Approve structural-data decisions
@@ -306,13 +414,17 @@ schema before later feature work begins. This is documentation-only.
 
 REQUIRED CHANGES
 
-Create docs/STRUCTURAL_DATA_CATALOG.md. Inventory every field that represents
-a status, type, category, role, purpose, proficiency, importance, lifecycle
-state, machine operation, or interactive option.
+Create docs/STRUCTURAL_DATA_CATALOG.md. Inventory every current or planned
+field that represents a status, type, category, role, purpose, proficiency,
+importance, lifecycle state, machine operation, or interactive option. Search
+the current migrations and runtime validation/registries first, then the
+future-state reference schema.
 
 For each field record:
 - table.column
 - consuming feature and scheduled slice
+- source evidence: current migration, current runtime code, ADR, or reference
+  schema only
 - ownership: code contract, system catalog, novel-owned value, or free text
 - tenancy scope
 - stable machine-key format
@@ -324,7 +436,9 @@ For each field record:
 - decision status: approved or decision required
 
 Use only values already present in current code, migrations, ADRs, or explicit
-schema comments. Do not invent missing lists.
+schema comments. Do not invent missing lists. When the current application and
+reference SQL disagree, record both values and mark the decision unresolved;
+the reference SQL never overrides the current migration or runtime code.
 
 KNOWN SOURCES TO RECORD
 
@@ -332,11 +446,18 @@ KNOWN SOURCES TO RECORD
 - novel status: planning, drafting, revising, complete, archived
 - card type: character, location, item, organization
 - card status: active, archived
+- card importance: current migration default normal versus future reference
+  default supporting; no complete allowed set exists, so this is decision
+  required
 - character trait types explicitly listed in the reference schema comment
 - defaults explicitly present in the reference schema
 
 Any field with only a default but no complete allowed set remains "decision
 required."
+
+`CardTypeRegistry` route and table metadata must be recorded as planned
+metadata. Do not cite it as proof that subtype routes, tables, controllers, or
+templates are implemented.
 
 FORBIDDEN
 
@@ -350,9 +471,31 @@ FORBIDDEN
 ACCEPTANCE
 
 - Every value-bearing field in the full reference schema is represented.
+- Every value-bearing field already enforced or defaulted by the current
+  migration/runtime is represented, including current/reference conflicts.
 - Undefined choices are clearly listed as blockers for their scheduled slice.
 - The document distinguishes machine keys from display labels.
 ```
+
+## Shared grounding for story-world subtype slices
+
+Apply these rules in addition to the selected slice prompt:
+
+- `characters`, `locations`, `items`, and `organizations` are one-to-one
+  extensions of `cards`; they do not have their own `novel_id`.
+- Resolve ownership by joining through the associated Card and checking
+  `cards.novel_id` against CurrentNovel.
+- Phase 0/1 already permits Cards with any `CardTypeRegistry` key, so matching
+  Cards may exist before `characters`, `locations`, `items`, or `organizations`
+  is introduced. SG-20, SG-23, SG-24, and SG-25 must define and test a safe
+  explicit path to initialize the missing root subtype row. Do not silently
+  create business rows in a data migration.
+- New root subtype creation must not leave a Card committed without its
+  required subtype row. Use one transaction.
+- SG-21 and SG-22 rows inherit tenancy through Character and then Card; they
+  also do not gain `novel_id`.
+- Registry `table` and `route` strings are planned metadata until the selected
+  slice implements and tests the corresponding structures.
 
 ## SG-20 — Character identity
 
@@ -384,6 +527,8 @@ BEHAVIOR
 
 - character add/view/edit through novel-scoped routes
 - create the card and character rows atomically
+- allow an existing character Card without a subtype row to initialize its
+  character details through an explicit, authorized action
 - reject a non-character card_id
 - reject foreign-novel cards
 - prevent more than one character row for a card
@@ -505,6 +650,7 @@ BEHAVIOR
 
 - novel-scoped location add/view/edit
 - atomic card plus location creation
+- explicit initialization path for an existing location Card
 - parent selection limited to the same novel
 - reject self-parenting and hierarchy cycles
 - reject non-location cards and foreign-novel IDs
@@ -542,6 +688,7 @@ BEHAVIOR
 
 - novel-scoped item add/view/edit
 - atomic card plus item creation
+- explicit initialization path for an existing item Card
 - owner and location choices limited to the same novel
 - reject non-item cards and cross-novel associations
 
@@ -582,6 +729,8 @@ STRUCTURAL DATA
 BEHAVIOR
 
 - novel-scoped organization CRUD
+- atomic card plus organization creation and an explicit initialization path
+  for an existing organization Card
 - same-novel headquarters selection
 - add/edit/end/remove character memberships
 - reject all cross-novel associations
@@ -604,9 +753,10 @@ Implement typed relationships between two cards in the same novel.
 
 SCHEMA
 
-Add relationships. Add a relationship-type catalog table only if SG-01
-explicitly approved database ownership; otherwise use an approved code
-registry and persist its stable key.
+Add relationships with direct novel_id, source_card_id, and target_card_id as
+shown by the reference design, adapted to current migration conventions. Add a
+relationship-type catalog table only if SG-01 explicitly approved database
+ownership; otherwise use an approved code registry and persist its stable key.
 
 STRUCTURAL DATA
 
@@ -640,6 +790,9 @@ OBJECTIVE
 
 Implement ordered chapters and scenes, including optional POV character and
 location links.
+
+Chapters and scenes are direct novel-owned structures, not Cards. Preserve
+ADR-002 and do not add card_id or CardTypeRegistry entries for them.
 
 SCHEMA
 
@@ -823,6 +976,9 @@ OBJECTIVE
 
 Implement novel-owned asset metadata and card attachments.
 
+This slice concerns uploaded-file domain records. Do not modify or migrate
+CakePHP's static `webroot` assets as part of this slice.
+
 SCHEMA
 
 Add only:
@@ -837,7 +993,9 @@ user-facing category catalog.
 
 BEHAVIOR
 
-- use the already approved storage abstraction or stop for a storage decision
+- the current Phase 0/1 repository has no uploaded-file storage abstraction,
+  provider configuration, or storage service; stop for an approved storage
+  ADR/decision unless one has been added by an earlier approved change
 - novel-scoped upload metadata and deletion rules
 - same-novel card attachment
 - validate size, media type, path handling, and authorization
@@ -982,9 +1140,10 @@ EXCLUDED
 - cloud publishing integrations
 ```
 
-## Completion rule
+## Completion rules
 
-The database is considered aligned with a development phase only when:
+For a schema-changing feature slice, the database is considered aligned only
+when:
 
 1. all migrations through that slice are applied;
 2. required structural machine keys and catalog rows are installed;
@@ -993,6 +1152,15 @@ The database is considered aligned with a development phase only when:
 5. every later-slice table remains forbidden; and
 6. a clean install and an upgrade from the previous slice converge on the same
    schema and required structural data.
+
+For documentation/design gates such as SG-01 and SG-70, completion instead
+requires the named document, every listed decision or explicit blocker, review
+approval, and no migration or runtime implementation.
+
+SG-00 is complete only when migration-only setup and the exhaustive Phase 0/1
+boundary test are present. A platform-incompatible dependency lock blocks its
+test-verification claim but does not authorize an unrelated dependency change
+inside SG-00.
 
 Schema without a consumer is premature. A consumer without migration-tracked
 schema and structural data is incomplete.
