@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use ArrayObject;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
 use Cake\Http\Exception\NotFoundException;
@@ -19,7 +20,7 @@ class CardsTagsTable extends Table
         $this->belongsTo('Tags');
     }
 
-    public function beforeSave(EventInterface $event, EntityInterface $entity, \ArrayObject $options): void
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
     {
         $cards = $this->fetchTable('Cards');
         $tags = $this->fetchTable('Tags');

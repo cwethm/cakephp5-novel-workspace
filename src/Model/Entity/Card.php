@@ -8,6 +8,8 @@ use Cake\ORM\Entity;
 class Card extends Entity
 {
     protected array $_accessible = [
+        'novel_id' => true,
+        'card_type' => true,
         'name' => true,
         'slug' => true,
         'short_summary' => true,

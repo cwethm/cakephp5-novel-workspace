@@ -7,13 +7,14 @@ use App\Domain\Registry\CardTypeRegistry;
 use App\Service\CardService;
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 class CardsController extends AppController
 {
-    public function index(int $novel_id)
+    public function index(int $novel_id): void
     {
         $currentNovel = $this->currentNovel();
-        $query = $this->fetchTable('Cards')->find('forNovel', ['novelId' => $currentNovel->id()])
+        $query = $this->fetchTable('Cards')->find('forNovel', novelId: $currentNovel->id())
             ->contain(['Tags']);
 
         $type = $this->request->getQuery('type');
@@ -48,7 +49,7 @@ class CardsController extends AppController
         $this->set('cardTypes', CardTypeRegistry::all());
     }
 
-    public function add(int $novel_id)
+    public function add(int $novel_id): ?Response
     {
         $currentNovel = $this->currentNovel();
         $cards = $this->fetchTable('Cards');
@@ -70,13 +71,15 @@ class CardsController extends AppController
 
         $this->set(compact('card', 'currentNovel'));
         $this->set('cardTypes', CardTypeRegistry::options());
+
+        return null;
     }
 
-    public function edit(int $novel_id, int $id)
+    public function edit(int $novel_id, int $id): ?Response
     {
         $currentNovel = $this->currentNovel();
         try {
-            $card = $this->fetchTable('Cards')->find('forNovel', ['novelId' => $currentNovel->id()])
+            $card = $this->fetchTable('Cards')->find('forNovel', novelId: $currentNovel->id())
                 ->where(['Cards.id' => $id])
                 ->contain(['Tags'])
                 ->firstOrFail();
@@ -97,15 +100,17 @@ class CardsController extends AppController
         }
 
         $this->set(compact('card', 'currentNovel'));
+
+        return null;
     }
 
-    public function archive(int $novel_id, int $id, CardService $cardService)
+    public function archive(int $novel_id, int $id, CardService $cardService): ?Response
     {
         $this->request->allowMethod(['post']);
         $currentNovel = $this->currentNovel();
 
         try {
-            $card = $this->fetchTable('Cards')->find('forNovel', ['novelId' => $currentNovel->id()])
+            $card = $this->fetchTable('Cards')->find('forNovel', novelId: $currentNovel->id())
                 ->where(['Cards.id' => $id])
                 ->firstOrFail();
         } catch (RecordNotFoundException) {

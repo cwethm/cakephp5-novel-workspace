@@ -5,17 +5,18 @@ namespace App\Controller;
 
 use Cake\Datasource\Exception\RecordNotFoundException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 
 class NovelsController extends AppController
 {
-    public function index()
+    public function index(): void
     {
         $this->set('novels', $this->paginate($this->fetchTable('Novels')->find()->where([
             'Novels.user_id' => $this->currentUserId(),
         ])));
     }
 
-    public function add()
+    public function add(): ?Response
     {
         $novel = $this->fetchTable('Novels')->newEmptyEntity();
         if ($this->request->is('post')) {
@@ -25,14 +26,16 @@ class NovelsController extends AppController
             if ($this->fetchTable('Novels')->save($novel)) {
                 $this->Flash->success('Novel created.');
 
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect('/novels');
             }
             $this->Flash->error('Could not save novel.');
         }
         $this->set(compact('novel'));
+
+        return null;
     }
 
-    public function edit(int $id)
+    public function edit(int $id): ?Response
     {
         try {
             $novel = $this->fetchTable('Novels')->find()->where([
@@ -48,15 +51,17 @@ class NovelsController extends AppController
             if ($this->fetchTable('Novels')->save($novel)) {
                 $this->Flash->success('Novel updated.');
 
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect('/novels');
             }
             $this->Flash->error('Could not update novel.');
         }
 
         $this->set(compact('novel'));
+
+        return null;
     }
 
-    public function view(int $id)
+    public function view(int $id): void
     {
         try {
             $novel = $this->fetchTable('Novels')->find()->where([

@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace App;
 
 use App\Middleware\HostHeaderMiddleware;
+use App\Service\CardService;
+use App\Service\SlugService;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Identifier\AbstractIdentifier;
+use Authentication\Middleware\AuthenticationMiddleware;
 use Authorization\AuthorizationService;
 use Authorization\AuthorizationServiceInterface;
 use Authorization\AuthorizationServiceProviderInterface;
@@ -27,7 +30,9 @@ use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
 
-class Application extends BaseApplication implements AuthenticationServiceProviderInterface, AuthorizationServiceProviderInterface
+class Application extends BaseApplication implements
+    AuthenticationServiceProviderInterface,
+    AuthorizationServiceProviderInterface
 {
     public function bootstrap(): void
     {
@@ -45,7 +50,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             ]))
             ->add(new RoutingMiddleware($this))
             ->add(new BodyParserMiddleware())
-            ->add(new \Authentication\Middleware\AuthenticationMiddleware($this))
+            ->add(new AuthenticationMiddleware($this))
             ->add(new AuthorizationMiddleware($this, [
                 'requireAuthorizationCheck' => false,
             ]))
@@ -58,6 +63,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
     public function services(ContainerInterface $container): void
     {
+        $container->add(SlugService::class);
+        $container->add(CardService::class)->addArgument(SlugService::class);
     }
 
     public function events(EventManagerInterface $eventManager): EventManagerInterface
@@ -71,13 +78,6 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         $service->setConfig([
             'unauthenticatedRedirect' => '/login',
             'queryParam' => 'redirect',
-        ]);
-
-        $service->loadIdentifier('Authentication.Password', [
-            'fields' => [
-                AbstractIdentifier::CREDENTIAL_USERNAME => 'email',
-                AbstractIdentifier::CREDENTIAL_PASSWORD => 'password',
-            ],
         ]);
 
         $service->loadAuthenticator('Authentication.Session');
