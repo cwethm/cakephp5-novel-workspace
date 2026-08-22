@@ -43,6 +43,10 @@ Before asking an AI agent to make changes:
 - tell it whether the repo already contains the full CakePHP app skeleton
 - tell it whether it should preserve Codespaces compatibility
 
+For database and feature-phase work, use
+[`COPILOT_PHASED_SCHEMA_PROMPTS.md`](COPILOT_PHASED_SCHEMA_PROMPTS.md). Paste
+its mandatory execution contract with exactly one slice prompt per task.
+
 ## Safety note
 
 Do not let AI silently replace environment-specific credentials or hide setup steps. Ask it to keep docs and config aligned.
