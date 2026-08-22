@@ -18,6 +18,8 @@ namespace App\Test\TestCase;
 
 use App\Application;
 use App\Middleware\HostHeaderMiddleware;
+use App\Service\CardService;
+use App\Service\SlugService;
 use Authentication\Middleware\AuthenticationMiddleware;
 use Authorization\Middleware\AuthorizationMiddleware;
 use Cake\Core\Configure;
@@ -98,5 +100,14 @@ class ApplicationTest extends TestCase
         $this->assertInstanceOf(AuthorizationMiddleware::class, $middleware->current());
         $middleware->seek(7);
         $this->assertInstanceOf(CsrfProtectionMiddleware::class, $middleware->current());
+    }
+
+    public function testServices(): void
+    {
+        $app = new Application(dirname(__DIR__, 2) . '/config');
+        $container = $app->getContainer();
+
+        $this->assertInstanceOf(SlugService::class, $container->get(SlugService::class));
+        $this->assertInstanceOf(CardService::class, $container->get(CardService::class));
     }
 }

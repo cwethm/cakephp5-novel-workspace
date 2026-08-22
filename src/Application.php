@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App;
 
 use App\Middleware\HostHeaderMiddleware;
+use App\Service\CardService;
+use App\Service\SlugService;
 use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
@@ -61,6 +63,8 @@ class Application extends BaseApplication implements
 
     public function services(ContainerInterface $container): void
     {
+        $container->add(SlugService::class);
+        $container->add(CardService::class)->addArgument(SlugService::class);
     }
 
     public function events(EventManagerInterface $eventManager): EventManagerInterface
