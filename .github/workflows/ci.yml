@@ -38,7 +38,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y default-mysql-client
-          mysql -h 127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS cakephp_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+          mysql -h 127.0.0.1 -uroot -proot -e "
+            CREATE DATABASE IF NOT EXISTS cakephp_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+            GRANT ALL PRIVILEGES ON cakephp_test.* TO 'cake'@'%';
+          "
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
