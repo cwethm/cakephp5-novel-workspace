@@ -3,14 +3,16 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Database;
 
+use Cake\Database\Connection;
 use Cake\Datasource\ConnectionManager;
 use Cake\TestSuite\TestCase;
 
 class PhaseSchemaTest extends TestCase
 {
-    public function testPhaseZeroOneSchemaBoundaries(): void
+    public function testPhaseTwoSg21SchemaBoundaries(): void
     {
         $connection = ConnectionManager::get('test');
+        $this->assertInstanceOf(Connection::class, $connection);
         $tables = $connection->getSchemaCollection()->listTables();
 
         $requiredDomainTables = [
@@ -19,20 +21,38 @@ class PhaseSchemaTest extends TestCase
             'cards',
             'tags',
             'cards_tags',
+            'characters',
+            'character_appearances',
+            'character_personalities',
+            'character_voices',
         ];
 
         foreach ($requiredDomainTables as $table) {
-            $this->assertContains($table, $tables, "Missing required Phase 0/1 table: {$table}");
+            $this->assertContains($table, $tables, "Missing required SG-21 table: {$table}");
         }
 
         $forbiddenLaterPhaseTables = [
-            'characters',
+            'character_traits',
+            'character_skills',
+            'character_goals',
+            'locations',
+            'items',
+            'organizations',
+            'character_organizations',
             'relationships',
             'chapters',
             'scenes',
+            'characters_scenes',
+            'items_scenes',
+            'organizations_scenes',
+            'story_threads',
+            'scenes_story_threads',
             'plot_points',
+            'plot_points_story_threads',
+            'characters_plot_points',
             'notes',
             'assets',
+            'assets_cards',
         ];
 
         foreach ($forbiddenLaterPhaseTables as $table) {

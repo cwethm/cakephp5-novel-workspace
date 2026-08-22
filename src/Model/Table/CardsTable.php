@@ -23,6 +23,9 @@ class CardsTable extends Table
         $this->addBehavior('Timestamp');
 
         $this->belongsTo('Novels');
+        $this->hasOne('Characters', [
+            'foreignKey' => 'card_id',
+        ]);
         $this->belongsToMany('Tags', [
             'joinTable' => 'cards_tags',
         ]);

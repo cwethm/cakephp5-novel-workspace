@@ -1,26 +1,44 @@
 # Schema Phases Ledger
 
-Current phase: Phase 0/1
+Current phase: Phase 2 (SG-21)
 
-Current migration head: `20260821190000_InitialNovelWorkspace`
+Current migration head: `20260822160000_AddCharacterProfileSectionsTables`
 
-Phase 0/1 required domain tables:
+Phase 2 SG-21 required domain tables:
 
 - `users`
 - `novels`
 - `cards`
 - `tags`
 - `cards_tags`
-
-Later-phase tables forbidden at Phase 0/1:
-
 - `characters`
+- `character_appearances`
+- `character_personalities`
+- `character_voices`
+
+Later-phase tables forbidden after SG-21:
+
+- `character_traits`
+- `character_skills`
+- `character_goals`
+- `locations`
+- `items`
+- `organizations`
+- `character_organizations`
 - `relationships`
 - `chapters`
 - `scenes`
+- `characters_scenes`
+- `items_scenes`
+- `organizations_scenes`
+- `story_threads`
+- `scenes_story_threads`
 - `plot_points`
+- `plot_points_story_threads`
+- `characters_plot_points`
 - `notes`
 - `assets`
+- `assets_cards`
 
 Reference schema rule:
 
