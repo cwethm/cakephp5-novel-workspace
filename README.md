@@ -1,101 +1,71 @@
-# CakePHP 5 Codespaces Template
+# Novel Workspace (CakePHP 5)
 
-A practical starter layout for **CakePHP 5** projects that are developed in **GitHub Codespaces** with:
+Production-minded Phase 0/1 foundation for a Novel Factory-style writing workspace.
 
-- PHP 8.3
-- MySQL 8.4
-- Xdebug
-- PHPUnit
-- VS Code tasks and launch config
-- AI-friendly repo guidance for Copilot and Codex
+## Requirements
 
-## What this template is for
+- PHP 8.3+
+- MySQL 8
+- Composer
 
-Use this repository as a **GitHub template repository** for new CakePHP 5 apps.
-
-The intended workflow is:
-
-1. Create a new repository from this template.
-2. Open the new repository in GitHub Codespaces.
-3. Let the devcontainer build.
-4. Run migrations and tests.
-5. Start building your app.
-
-## What should already be in the repo
-
-This template works best when the repo already contains the **real CakePHP app skeleton** as the application base.
-
-That means the generated project repo should include things like:
-
-- `bin/`
-- `src/`
-- `templates/`
-- `webroot/`
-- `config/bootstrap.php`
-- `config/routes.php`
-- `composer.json`
-
-If your repository only contains scaffold files and docs, merge the official CakePHP app skeleton into it **before** turning it into a long-term template.
-
-## Included template support files
-
-This pack focuses on the parts that make a template pleasant to use repeatedly:
-
-- `.devcontainer/` for Codespaces
-- `.vscode/` tasks and debugger config
-- `config/app_local.example.php` for local MySQL defaults
-- `docs/` for setup, AI workflow, and maintenance guidance
-- `.github/copilot-instructions.md` for repo-grounded AI coding help
-
-## Suggested project flow
-
-### In GitHub
-
-1. Mark the repo as a **Template repository**.
-2. Create a new app repo from it.
-3. Open the new repo in Codespaces.
-
-### In the Codespace
+## Install
 
 ```bash
 composer install
-bin/cake migrations migrate
-bin/cake migrations migrate --connection test
-vendor/bin/phpunit
+cp config/app_local.example.php config/app_local.php
+```
+
+## Database setup
+
+Default local databases:
+
+- `cakephp_app` (development)
+- `cakephp_test` (test)
+
+Configure credentials in `config/app_local.php` (or env overrides used by that file).
+
+## Migrations
+
+```bash
+composer migrate
+composer migrate:test
+```
+
+## Run app
+
+```bash
 bin/cake server -H 0.0.0.0 -p 8765
 ```
 
-## Database defaults used by this template
+## Testing
 
-- App database: `cakephp_app`
-- Test database: `cakephp_test`
-- Dev user: `cake`
-- Dev password: `cake`
+```bash
+composer test
+```
 
-Change these for any environment beyond disposable local or Codespaces development.
+## Static analysis
 
-## AI usage guidance
+```bash
+composer stan
+```
 
-This template is designed to work well with:
+## Coding standards
 
-- GitHub Copilot for inline suggestions and chat
-- Codex in a VS Code-compatible editor for larger coding and refactor tasks
+```bash
+composer cs-check
+composer cs-fix
+```
 
-See:
+## Current scope
 
-- `docs/AI_WORKFLOW.md`
-- `.github/copilot-instructions.md`
+Implemented foundation:
 
-## Files to review before publishing this as your main template
+- Authentication (login/logout)
+- User-owned Novels with ownership scoping (404 on foreign access)
+- CurrentNovel server-side context
+- Cards + Tags + `cards_tags`
+- Card type registry
+- Slug and card workflow services
+- Migrations, tests, and CI pipeline
 
-- `.devcontainer/devcontainer.json`
-- `.devcontainer/Dockerfile`
-- `.devcontainer/compose.yaml`
-- `config/app_local.example.php`
-- `.vscode/tasks.json`
-- `.github/copilot-instructions.md`
-- `docs/TEMPLATE_MAINTENANCE.md`
-
-## Recommended next improvement
-
-Once your current repo is fully working, copy these files into that repo and commit them as a template-improvement pass.
+Later-phase features (subtype tables, relationships, chapters/scenes, plot, import/export) are intentionally deferred.
