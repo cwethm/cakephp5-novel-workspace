@@ -20,6 +20,7 @@
     }
   },
   "containerEnv": {
+    "APP_NAME": "CakePHP 5 App",
     "DEBUG": "true",
     "SECURITY_SALT": "change-this-in-real-project",
     "XDEBUG_MODE": "off",
@@ -38,9 +39,14 @@
         "editorconfig.editorconfig",
         "eamodio.gitlens",
         "ms-azuretools.vscode-docker",
-        "github.copilot",
-        "github.copilot-chat"
-      ]
+        "github.copilot-chat",
+        "CodeUnit-TL.database-navigator"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "intelephense.environment.phpVersion": "8.3.0",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",

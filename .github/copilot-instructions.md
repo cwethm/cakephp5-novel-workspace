@@ -53,3 +53,5 @@ Good tasks for AI help in this repo:
 - improving test bootstrapping
 - reviewing devcontainer config
 - proposing plugin integration patterns without hard-coding them into the generic template
+
+For database, structural-data, or feature-phase work, read docs/COPILOT_PHASED_SCHEMA_PROMPTS.md before planning. Apply its Mandatory execution contract and implement exactly one named SG-* slice. Never continue into another slice, import the reference SQL, invent undefined value sets, or perform unlisted future work. Stop and report missing prerequisites or decisions before editing.
