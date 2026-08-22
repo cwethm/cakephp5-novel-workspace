@@ -35,6 +35,18 @@ class CharactersTable extends Table
             'foreignKey' => 'character_id',
             'dependent' => true,
         ]);
+        $this->hasMany('CharacterTraits', [
+            'foreignKey' => 'character_id',
+            'dependent' => true,
+        ]);
+        $this->hasMany('CharacterSkills', [
+            'foreignKey' => 'character_id',
+            'dependent' => true,
+        ]);
+        $this->hasMany('CharacterGoals', [
+            'foreignKey' => 'character_id',
+            'dependent' => true,
+        ]);
     }
 
     public function validationDefault(Validator $validator): Validator

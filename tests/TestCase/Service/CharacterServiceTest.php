@@ -20,6 +20,9 @@ class CharacterServiceTest extends TestCase
         'app.CharacterAppearances',
         'app.CharacterPersonalities',
         'app.CharacterVoices',
+        'app.CharacterTraits',
+        'app.CharacterSkills',
+        'app.CharacterGoals',
     ];
 
     private function currentNovelOne(): CurrentNovel
@@ -224,5 +227,182 @@ class CharacterServiceTest extends TestCase
             $this->assertSame('supporting', (string)$characters->get((int)$character->id)->role);
             $this->assertFalse($personalities->exists(['character_id' => (int)$character->id]));
         }
+    }
+
+    public function testUpdateRepeatablesCrudAndReorder(): void
+    {
+        $traits = TableRegistry::getTableLocator()->get('CharacterTraits');
+        $skills = TableRegistry::getTableLocator()->get('CharacterSkills');
+        $goals = TableRegistry::getTableLocator()->get('CharacterGoals');
+
+        $traitToDelete = $traits->newEntity([
+            'character_id' => 1,
+            'trait_type' => 'habit',
+            'name' => 'Old Habit',
+            'description' => 'to delete',
+            'sort_order' => 9,
+        ]);
+        $traits->saveOrFail($traitToDelete);
+
+        $skillToDelete = $skills->newEntity([
+            'character_id' => 1,
+            'name' => 'Old Skill',
+            'description' => 'to delete',
+            'proficiency' => 'basic',
+            'sort_order' => 9,
+        ]);
+        $skills->saveOrFail($skillToDelete);
+
+        $goalToDelete = $goals->newEntity([
+            'character_id' => 1,
+            'goal_type' => 'external',
+            'description' => 'to delete',
+            'priority' => 9,
+            'status' => 'active',
+        ]);
+        $goals->saveOrFail($goalToDelete);
+
+        $service = new CharacterService();
+        try {
+            $service->update(
+                $this->currentNovelOne(),
+                1,
+                ['name' => 'Whitehope'],
+                ['role' => 'protagonist'],
+                [],
+                [],
+                [],
+                [
+                    [
+                        'id' => 1,
+                        'trait_type' => 'strength',
+                        'name' => 'Sharper Observer',
+                        'description' => 'improved',
+                        'sort_order' => 2,
+                    ],
+                    [
+                        'id' => (int)$traitToDelete->id,
+                        'delete' => 1,
+                    ],
+                    [
+                        'trait_type' => 'fear',
+                        'name' => 'Crowds',
+                        'description' => 'avoids crowds',
+                        'sort_order' => 1,
+                    ],
+                ],
+                [
+                    [
+                        'id' => 1,
+                        'name' => 'Investigation',
+                        'description' => 'refined',
+                        'proficiency' => 'expert',
+                        'sort_order' => 2,
+                    ],
+                    [
+                        'id' => (int)$skillToDelete->id,
+                        'delete' => 1,
+                    ],
+                    [
+                        'name' => 'Disguise',
+                        'description' => 'market blending',
+                        'proficiency' => 'intermediate',
+                        'sort_order' => 1,
+                    ],
+                ],
+                [
+                    [
+                        'id' => 1,
+                        'goal_type' => 'external',
+                        'description' => 'Expose ring leaders',
+                        'priority' => 2,
+                        'status' => 'active',
+                    ],
+                    [
+                        'id' => (int)$goalToDelete->id,
+                        'delete' => 1,
+                    ],
+                    [
+                        'goal_type' => 'external',
+                        'description' => 'Protect witnesses',
+                        'priority' => 1,
+                        'status' => 'active',
+                    ],
+                ],
+            );
+        } catch (PersistenceFailedException $exception) {
+            $this->fail(json_encode($exception->getEntity()->getErrors(), JSON_THROW_ON_ERROR));
+        }
+
+        $this->assertFalse($traits->exists(['id' => (int)$traitToDelete->id]));
+        $this->assertFalse($skills->exists(['id' => (int)$skillToDelete->id]));
+        $this->assertFalse($goals->exists(['id' => (int)$goalToDelete->id]));
+
+        $traitDescriptions = $traits->find()
+            ->where(['character_id' => 1])
+            ->orderBy(['sort_order' => 'ASC', 'id' => 'ASC'])
+            ->all()
+            ->extract('description')
+            ->toList();
+        $this->assertSame('avoids crowds', (string)$traitDescriptions[0]);
+
+        $goalDescriptions = $goals->find()
+            ->where(['character_id' => 1])
+            ->orderBy(['priority' => 'ASC', 'id' => 'ASC'])
+            ->all()
+            ->extract('description')
+            ->toList();
+        $this->assertSame('Protect witnesses', (string)$goalDescriptions[0]);
+    }
+
+    public function testUpdateRejectsForeignRepeatableRowId(): void
+    {
+        $service = new CharacterService();
+
+        $this->expectException(NotFoundException::class);
+        $service->update(
+            $this->currentNovelOne(),
+            1,
+            ['name' => 'Whitehope'],
+            ['role' => 'protagonist'],
+            [],
+            [],
+            [],
+            [
+                [
+                    'id' => 2,
+                    'trait_type' => 'strength',
+                    'name' => 'Invalid Foreign',
+                    'description' => 'should reject',
+                    'sort_order' => 0,
+                ],
+            ],
+        );
+    }
+
+    public function testUpdateRejectsInvalidGoalMachineKey(): void
+    {
+        $service = new CharacterService();
+
+        $this->expectException(PersistenceFailedException::class);
+        $service->update(
+            $this->currentNovelOne(),
+            1,
+            ['name' => 'Whitehope'],
+            ['role' => 'protagonist'],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [
+                [
+                    'goal_type' => 'internal',
+                    'description' => 'invalid type',
+                    'priority' => 0,
+                    'status' => 'active',
+                ],
+            ],
+        );
     }
 }

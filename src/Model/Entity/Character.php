@@ -36,5 +36,8 @@ class Character extends Entity
         'created' => true,
         'modified' => true,
         'card' => true,
+        'character_traits' => true,
+        'character_skills' => true,
+        'character_goals' => true,
     ];
 }

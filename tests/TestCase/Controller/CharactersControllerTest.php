@@ -19,6 +19,9 @@ class CharactersControllerTest extends TestCase
         'app.CharacterAppearances',
         'app.CharacterPersonalities',
         'app.CharacterVoices',
+        'app.CharacterTraits',
+        'app.CharacterSkills',
+        'app.CharacterGoals',
     ];
 
     private function loginAsUserA(): void
@@ -233,6 +236,170 @@ class CharactersControllerTest extends TestCase
         $this->loginAsUserA();
 
         $this->get('/novels/1/characters/2/edit');
+
+        $this->assertResponseCode(404);
+    }
+
+    public function testEditRepeatablesCrudAndReorder(): void
+    {
+        $this->loginAsUserA();
+
+        $traits = TableRegistry::getTableLocator()->get('CharacterTraits');
+        $skills = TableRegistry::getTableLocator()->get('CharacterSkills');
+        $goals = TableRegistry::getTableLocator()->get('CharacterGoals');
+
+        $traitToDelete = $traits->newEntity([
+            'character_id' => 1,
+            'trait_type' => 'habit',
+            'name' => 'Old Habit',
+            'description' => 'To be deleted',
+            'sort_order' => 9,
+        ]);
+        $traits->saveOrFail($traitToDelete);
+
+        $skillToDelete = $skills->newEntity([
+            'character_id' => 1,
+            'name' => 'Old Skill',
+            'description' => 'To be deleted',
+            'proficiency' => 'basic',
+            'sort_order' => 9,
+        ]);
+        $skills->saveOrFail($skillToDelete);
+
+        $goalToDelete = $goals->newEntity([
+            'character_id' => 1,
+            'goal_type' => 'external',
+            'description' => 'To be deleted',
+            'priority' => 9,
+            'status' => 'active',
+        ]);
+        $goals->saveOrFail($goalToDelete);
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+        $this->put('/novels/1/characters/1/edit', [
+            'card' => [
+                'name' => 'Whitehope Updated',
+                'status' => 'active',
+            ],
+            'character' => [
+                'role' => 'protagonist',
+            ],
+            'traits' => [
+                [
+                    'id' => 1,
+                    'trait_type' => 'strength',
+                    'name' => 'Sharper Observer',
+                    'description' => 'Improved detail tracking',
+                    'sort_order' => 2,
+                ],
+                [
+                    'id' => (int)$traitToDelete->id,
+                    'delete' => 1,
+                ],
+                [
+                    'trait_type' => 'fear',
+                    'name' => 'Crowds',
+                    'description' => 'Avoids dense crowds',
+                    'sort_order' => 1,
+                ],
+            ],
+            'skills' => [
+                [
+                    'id' => 1,
+                    'name' => 'Investigation',
+                    'description' => 'Refined process',
+                    'proficiency' => 'expert',
+                    'sort_order' => 2,
+                ],
+                [
+                    'id' => (int)$skillToDelete->id,
+                    'delete' => 1,
+                ],
+                [
+                    'name' => 'Disguise',
+                    'description' => 'Can blend into markets',
+                    'proficiency' => 'intermediate',
+                    'sort_order' => 1,
+                ],
+            ],
+            'goals' => [
+                [
+                    'id' => 1,
+                    'goal_type' => 'external',
+                    'description' => 'Expose the ring leaders',
+                    'priority' => 2,
+                    'status' => 'active',
+                ],
+                [
+                    'id' => (int)$goalToDelete->id,
+                    'delete' => 1,
+                ],
+                [
+                    'goal_type' => 'external',
+                    'description' => 'Protect witnesses',
+                    'priority' => 1,
+                    'status' => 'active',
+                ],
+            ],
+        ]);
+
+        $this->assertResponseSuccess();
+        $this->assertRedirectContains('/novels/1/characters/1');
+
+        $this->assertFalse($traits->exists(['id' => (int)$traitToDelete->id]));
+        $this->assertFalse($skills->exists(['id' => (int)$skillToDelete->id]));
+        $this->assertFalse($goals->exists(['id' => (int)$goalToDelete->id]));
+
+        $traitDescriptions = $traits->find()
+            ->where(['character_id' => 1])
+            ->orderBy(['sort_order' => 'ASC', 'id' => 'ASC'])
+            ->all()
+            ->extract('description')
+            ->toList();
+        $this->assertSame('Avoids dense crowds', (string)$traitDescriptions[0]);
+
+        $skillNames = $skills->find()
+            ->where(['character_id' => 1])
+            ->orderBy(['sort_order' => 'ASC', 'id' => 'ASC'])
+            ->all()
+            ->extract('name')
+            ->toList();
+        $this->assertSame('Disguise', (string)$skillNames[0]);
+
+        $goalDescriptions = $goals->find()
+            ->where(['character_id' => 1])
+            ->orderBy(['priority' => 'ASC', 'id' => 'ASC'])
+            ->all()
+            ->extract('description')
+            ->toList();
+        $this->assertSame('Protect witnesses', (string)$goalDescriptions[0]);
+    }
+
+    public function testEditRejectsForeignRepeatableRowIds(): void
+    {
+        $this->loginAsUserA();
+
+        $this->enableCsrfToken();
+        $this->enableSecurityToken();
+        $this->put('/novels/1/characters/1/edit', [
+            'card' => [
+                'name' => 'Whitehope Updated',
+                'status' => 'active',
+            ],
+            'character' => [
+                'role' => 'protagonist',
+            ],
+            'traits' => [
+                [
+                    'id' => 2,
+                    'trait_type' => 'strength',
+                    'name' => 'Invalid Foreign Row',
+                    'description' => 'Should reject',
+                    'sort_order' => 0,
+                ],
+            ],
+        ]);
 
         $this->assertResponseCode(404);
     }

@@ -1,9 +1,40 @@
 <h1>Edit Character</h1>
 <?php
 /** @var \App\Model\Entity\Character $character */
+/** @var array<string, string> $traitTypeOptions */
+/** @var array<string, string> $goalTypeOptions */
+/** @var array<string, string> $goalStatusOptions */
 $appearance = $character->get('character_appearance');
 $personality = $character->get('character_personality');
 $voice = $character->get('character_voice');
+$normalizeRows = static function (mixed $rows): array {
+    if (is_array($rows)) {
+        return array_values($rows);
+    }
+    if ($rows instanceof \Traversable) {
+        return array_values(iterator_to_array($rows));
+    }
+
+    return [];
+};
+$rowValue = static function (mixed $row, string $field, mixed $default = ''): mixed {
+    if (is_array($row)) {
+        return $row[$field] ?? $default;
+    }
+    if ($row instanceof \Cake\Datasource\EntityInterface) {
+        $value = $row->get($field);
+
+        return $value ?? $default;
+    }
+
+    return $default;
+};
+$traitRows = $normalizeRows($character->get('character_traits'));
+$skillRows = $normalizeRows($character->get('character_skills'));
+$goalRows = $normalizeRows($character->get('character_goals'));
+$traitRows[] = ['sort_order' => count($traitRows)];
+$skillRows[] = ['sort_order' => count($skillRows)];
+$goalRows[] = ['goal_type' => 'external', 'status' => 'active', 'priority' => count($goalRows)];
 ?>
 <?= $this->Form->create(null) ?>
 <fieldset>
@@ -70,6 +101,42 @@ $voice = $character->get('character_voice');
     <?= $this->Form->control('voice.speaking_style', ['value' => (string)($voice?->speaking_style ?? '')]) ?>
     <?= $this->Form->control('voice.cultural_influences', ['value' => (string)($voice?->cultural_influences ?? '')]) ?>
     <?= $this->Form->control('voice.religious_influences', ['value' => (string)($voice?->religious_influences ?? '')]) ?>
+</fieldset>
+<fieldset>
+    <legend>Traits</legend>
+    <?php foreach ($traitRows as $index => $trait): ?>
+        <?= $this->Form->control("traits.{$index}.id", ['type' => 'hidden', 'value' => $rowValue($trait, 'id', '')]) ?>
+        <?= $this->Form->control("traits.{$index}.trait_type", ['options' => $traitTypeOptions, 'empty' => true, 'value' => (string)$rowValue($trait, 'trait_type', '')]) ?>
+        <?= $this->Form->control("traits.{$index}.name", ['value' => (string)$rowValue($trait, 'name', '')]) ?>
+        <?= $this->Form->control("traits.{$index}.description", ['value' => (string)$rowValue($trait, 'description', '')]) ?>
+        <?= $this->Form->control("traits.{$index}.sort_order", ['type' => 'number', 'value' => (int)$rowValue($trait, 'sort_order', $index)]) ?>
+        <?= $this->Form->control("traits.{$index}.delete", ['type' => 'checkbox']) ?>
+        <hr>
+    <?php endforeach; ?>
+</fieldset>
+<fieldset>
+    <legend>Skills</legend>
+    <?php foreach ($skillRows as $index => $skill): ?>
+        <?= $this->Form->control("skills.{$index}.id", ['type' => 'hidden', 'value' => $rowValue($skill, 'id', '')]) ?>
+        <?= $this->Form->control("skills.{$index}.name", ['value' => (string)$rowValue($skill, 'name', '')]) ?>
+        <?= $this->Form->control("skills.{$index}.description", ['value' => (string)$rowValue($skill, 'description', '')]) ?>
+        <?= $this->Form->control("skills.{$index}.proficiency", ['value' => (string)$rowValue($skill, 'proficiency', '')]) ?>
+        <?= $this->Form->control("skills.{$index}.sort_order", ['type' => 'number', 'value' => (int)$rowValue($skill, 'sort_order', $index)]) ?>
+        <?= $this->Form->control("skills.{$index}.delete", ['type' => 'checkbox']) ?>
+        <hr>
+    <?php endforeach; ?>
+</fieldset>
+<fieldset>
+    <legend>Goals</legend>
+    <?php foreach ($goalRows as $index => $goal): ?>
+        <?= $this->Form->control("goals.{$index}.id", ['type' => 'hidden', 'value' => $rowValue($goal, 'id', '')]) ?>
+        <?= $this->Form->control("goals.{$index}.goal_type", ['options' => $goalTypeOptions, 'value' => (string)$rowValue($goal, 'goal_type', 'external')]) ?>
+        <?= $this->Form->control("goals.{$index}.description", ['value' => (string)$rowValue($goal, 'description', '')]) ?>
+        <?= $this->Form->control("goals.{$index}.priority", ['type' => 'number', 'value' => (int)$rowValue($goal, 'priority', $index)]) ?>
+        <?= $this->Form->control("goals.{$index}.status", ['options' => $goalStatusOptions, 'value' => (string)$rowValue($goal, 'status', 'active')]) ?>
+        <?= $this->Form->control("goals.{$index}.delete", ['type' => 'checkbox']) ?>
+        <hr>
+    <?php endforeach; ?>
 </fieldset>
 <?= $this->Form->button('Update Character') ?>
 <?= $this->Form->end() ?>

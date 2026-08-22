@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Domain\Registry\CharacterProfileRegistry;
 use App\Service\CharacterService;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Response;
@@ -62,6 +63,9 @@ class CharactersController extends AppController
         $request = $this->getRequest();
         $characterService = new CharacterService();
         $character = $characterService->getForNovel($currentNovel, $id);
+        $traitTypeOptions = CharacterProfileRegistry::traitTypeOptions();
+        $goalTypeOptions = CharacterProfileRegistry::goalTypeOptions();
+        $goalStatusOptions = CharacterProfileRegistry::goalStatusOptions();
         if (!$character->has('card')) {
             throw new NotFoundException();
         }
@@ -72,6 +76,9 @@ class CharactersController extends AppController
             $appearanceData = (array)$request->getData('appearance');
             $personalityData = (array)$request->getData('personality');
             $voiceData = (array)$request->getData('voice');
+            $traitsData = (array)$request->getData('traits', []);
+            $skillsData = (array)$request->getData('skills', []);
+            $goalsData = (array)$request->getData('goals', []);
 
             try {
                 $character = $characterService->update(
@@ -82,6 +89,9 @@ class CharactersController extends AppController
                     $appearanceData,
                     $personalityData,
                     $voiceData,
+                    $traitsData,
+                    $skillsData,
+                    $goalsData,
                 );
                 $this->Flash->success('Character updated.');
 
@@ -93,10 +103,13 @@ class CharactersController extends AppController
                 $card = $cards->patchEntity($character->card, $cardData);
                 $character = $characters->patchEntity($character, $characterData);
                 $character->set('card', $card);
+                $character->set('character_traits', $traitsData);
+                $character->set('character_skills', $skillsData);
+                $character->set('character_goals', $goalsData);
             }
         }
 
-        $this->set(compact('currentNovel', 'character'));
+        $this->set(compact('currentNovel', 'character', 'traitTypeOptions', 'goalTypeOptions', 'goalStatusOptions'));
 
         return null;
     }

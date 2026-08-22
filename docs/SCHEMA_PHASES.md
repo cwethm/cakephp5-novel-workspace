@@ -1,10 +1,10 @@
 # Schema Phases Ledger
 
-Current phase: Phase 2 (SG-21)
+Current phase: Phase 2 (SG-22)
 
-Current migration head: `20260822160000_AddCharacterProfileSectionsTables`
+Current migration head: `20260822190000_AddCharacterRepeatableDetailsTables`
 
-Phase 2 SG-21 required domain tables:
+Phase 2 SG-22 required domain tables:
 
 - `users`
 - `novels`
@@ -15,12 +15,12 @@ Phase 2 SG-21 required domain tables:
 - `character_appearances`
 - `character_personalities`
 - `character_voices`
-
-Later-phase tables forbidden after SG-21:
-
 - `character_traits`
 - `character_skills`
 - `character_goals`
+
+Later-phase tables forbidden after SG-22:
+
 - `locations`
 - `items`
 - `organizations`

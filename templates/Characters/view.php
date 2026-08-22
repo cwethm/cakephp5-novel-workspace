@@ -1,3 +1,4 @@
+<?php /** @var \App\Model\Entity\Character $character */ ?>
 <h1><?= h($character->card->name ?? 'Character') ?></h1>
 <p><strong>Role:</strong> <?= h((string)($character->role ?? '')) ?></p>
 <p>
@@ -27,3 +28,30 @@
 <p><strong>Friendship Notes:</strong> <?= h((string)($character->friendship_notes ?? '')) ?></p>
 <p><strong>Culture Notes:</strong> <?= h((string)($character->culture_notes ?? '')) ?></p>
 <p><strong>Religion Notes:</strong> <?= h((string)($character->religion_notes ?? '')) ?></p>
+
+<h2>Traits</h2>
+<?php foreach ((array)($character->get('character_traits') ?? []) as $trait): ?>
+    <p>
+        <strong><?= h((string)($trait->trait_type ?? '')) ?>:</strong>
+        <?= h((string)($trait->name ?? '')) ?>
+        <?= h((string)($trait->description ?? '')) ?>
+    </p>
+<?php endforeach; ?>
+
+<h2>Skills</h2>
+<?php foreach ((array)($character->get('character_skills') ?? []) as $skill): ?>
+    <p>
+        <strong><?= h((string)($skill->name ?? '')) ?>:</strong>
+        <?= h((string)($skill->description ?? '')) ?>
+        (<?= h((string)($skill->proficiency ?? '')) ?>)
+    </p>
+<?php endforeach; ?>
+
+<h2>Goals</h2>
+<?php foreach ((array)($character->get('character_goals') ?? []) as $goal): ?>
+    <p>
+        <strong><?= h((string)($goal->goal_type ?? '')) ?>:</strong>
+        <?= h((string)($goal->description ?? '')) ?>
+        [<?= h((string)($goal->status ?? '')) ?>]
+    </p>
+<?php endforeach; ?>
