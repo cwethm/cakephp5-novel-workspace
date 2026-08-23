@@ -61,6 +61,19 @@ return function (RouteBuilder $routes): void {
             ->setPass(['novel_id', 'id'])
             ->setPatterns(['novel_id' => '\\d+', 'id' => '\\d+']);
 
+        $builder->connect('/novels/{novel_id}/items/add', ['controller' => 'Items', 'action' => 'add'])
+            ->setPass(['novel_id'])
+            ->setPatterns(['novel_id' => '\\d+']);
+        $builder->connect('/novels/{novel_id}/items/initialize/{card_id}', ['controller' => 'Items', 'action' => 'initializeSubtype'])
+            ->setPass(['novel_id', 'card_id'])
+            ->setPatterns(['novel_id' => '\\d+', 'card_id' => '\\d+']);
+        $builder->connect('/novels/{novel_id}/items/{id}', ['controller' => 'Items', 'action' => 'view'])
+            ->setPass(['novel_id', 'id'])
+            ->setPatterns(['novel_id' => '\\d+', 'id' => '\\d+']);
+        $builder->connect('/novels/{novel_id}/items/{id}/edit', ['controller' => 'Items', 'action' => 'edit'])
+            ->setPass(['novel_id', 'id'])
+            ->setPatterns(['novel_id' => '\\d+', 'id' => '\\d+']);
+
         $builder->fallbacks();
     });
 };

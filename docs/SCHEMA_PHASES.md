@@ -1,10 +1,10 @@
 # Schema Phases Ledger
 
-Current phase: Phase 2 (SG-23)
+Current phase: Phase 2 (SG-24)
 
-Current migration head: `20260822230000_AddLocationsTable`
+Current migration head: `20260823010000_AddItemsTable`
 
-Phase 2 SG-23 required domain tables:
+Phase 2 SG-24 required domain tables:
 
 - `users`
 - `novels`
@@ -19,10 +19,10 @@ Phase 2 SG-23 required domain tables:
 - `character_skills`
 - `character_goals`
 - `locations`
-
-Later-phase tables forbidden after SG-23:
-
 - `items`
+
+Later-phase tables forbidden after SG-24:
+
 - `organizations`
 - `character_organizations`
 - `relationships`
