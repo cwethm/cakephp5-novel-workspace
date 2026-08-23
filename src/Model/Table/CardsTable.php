@@ -26,6 +26,9 @@ class CardsTable extends Table
         $this->hasOne('Characters', [
             'foreignKey' => 'card_id',
         ]);
+        $this->hasOne('Locations', [
+            'foreignKey' => 'card_id',
+        ]);
         $this->belongsToMany('Tags', [
             'joinTable' => 'cards_tags',
         ]);

@@ -9,7 +9,7 @@ use Cake\TestSuite\TestCase;
 
 class PhaseSchemaTest extends TestCase
 {
-    public function testPhaseTwoSg22SchemaBoundaries(): void
+    public function testPhaseTwoSg23SchemaBoundaries(): void
     {
         $connection = ConnectionManager::get('test');
         $this->assertInstanceOf(Connection::class, $connection);
@@ -28,14 +28,14 @@ class PhaseSchemaTest extends TestCase
             'character_traits',
             'character_skills',
             'character_goals',
+            'locations',
         ];
 
         foreach ($requiredDomainTables as $table) {
-            $this->assertContains($table, $tables, "Missing required SG-22 table: {$table}");
+            $this->assertContains($table, $tables, "Missing required SG-23 table: {$table}");
         }
 
         $forbiddenLaterPhaseTables = [
-            'locations',
             'items',
             'organizations',
             'character_organizations',

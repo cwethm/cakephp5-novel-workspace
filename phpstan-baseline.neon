@@ -156,21 +156,6 @@ parameters:
 			path: src/Model/Table/TagsTable.php
 
 		-
-			message: "#^Access to an undefined property App\\\\Model\\\\Entity\\\\Card\\:\\:\\$name\\.$#"
-			count: 1
-			path: src/Service/CardService.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Model\\\\Entity\\\\Card\\:\\:\\$slug\\.$#"
-			count: 1
-			path: src/Service/CardService.php
-
-		-
-			message: "#^Access to an undefined property App\\\\Model\\\\Entity\\\\Card\\:\\:\\$status\\.$#"
-			count: 1
-			path: src/Service/CardService.php
-
-		-
 			message: "#^Call to an undefined method Cake\\\\Datasource\\\\RepositoryInterface\\:\\:saveOrFail\\(\\)\\.$#"
 			count: 3
 			path: src/Service/CardService.php
